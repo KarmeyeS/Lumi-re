@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>ARQUIVOS INTERNOS // AXION TECH</title>
+
+<style>
+body{
+    background-color: black;
+    color: #00ff00;
+    font-family: "Courier New", monospace;
+    margin:0;
+    padding:0;
+}
+
+.container{
+    width: 80%;
+    margin: auto;
+    padding: 40px;
+}
+
+input{
+    background:black;
+    border:1px solid #00ff00;
+    color:#00ff00;
+    padding:10px;
+    margin:5px 0;
+    width:100%;
+}
+
+button{
+    background:black;
+    border:1px solid #00ff00;
+    color:#00ff00;
+    padding:10px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#003300;
+}
+
+.hidden{
+    display:none;
+}
+
+.box{
+    border:1px solid #00ff00;
+    padding:20px;
+    margin-top:20px;
+}
+
+h1,h2{
+    border-bottom:1px solid #00ff00;
+    padding-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <h1>SISTEMA INTERNO // AXION TECH</h1>
+    <p>Acesso restrito. Insira suas credenciais.</p>
+    <input type="text" id="username" placeholder="Usuário">
+    <input type="password" id="password" placeholder="Senha">
+    <button onclick="login()">ACESSAR</button>
+    <p id="error"></p>
+</div>
+
+<!-- PAINEL -->
+<div id="dashboard" class="hidden">
+    <h1>PAINEL DE ACESSO</h1>
+    <p id="welcome"></p>
+    <button onclick="logout()">Encerrar sessão</button>
+
+    <div id="userContent"></div>
+</div>
+
+</div>
+
+<script>
+
+// "Banco de dados" interno
+const users = {
+    "operador": {
+        password: "1234",
+        role: "default",
+        emails: [
+            "Relatório do setor 7 atualizado.",
+            "Nova diretriz enviada pelo Conselho.",
+            "Atenção: atividade incomum detectada."
+        ],
+        notifications: [
+            "Seu acesso foi monitorado.",
+            "Backup realizado às 03:14."
+        ]
+    },
+    "diretor": {
+        password: "alpha",
+        role: "director"
+    },
+    "visitante": {
+        password: "guest",
+        role: "restricted"
+    }
+};
+
+function login(){
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if(users[username] && users[username].password === password){
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+
+        document.getElementById("welcome").innerText =
+            "Bem-vindo, " + username.toUpperCase();
+
+        loadUserContent(username);
+    }else{
+        document.getElementById("error").innerText =
+            "Credenciais inválidas ou acesso negado.";
+    }
+}
+
+function logout(){
+    location.reload();
+}
+
+function loadUserContent(username){
+    const user = users[username];
+    const content = document.getElementById("userContent");
+    content.innerHTML = "";
+
+    if(user.role === "default"){
+        content.innerHTML += `
+            <div class="box">
+                <h2>📧 CAIXA DE EMAIL</h2>
+                ${user.emails.map(e => "<p>> " + e + "</p>").join("")}
+            </div>
+        `;
+
+        content.innerHTML += `
+            <div class="box">
+                <h2>🔔 NOTIFICAÇÕES</h2>
+                ${user.notifications.map(n => "<p>> " + n + "</p>").join("")}
+            </div>
+        `;
+    }
+
+    if(user.role === "director"){
+        content.innerHTML += `
+            <div class="box">
+                <h2>ARQUIVO CONFIDENCIAL</h2>
+                <p>> Projeto ECLIPSE iniciado.</p>
+                <p>> Status: ATIVO</p>
+                <p>> Nível de sigilo: MÁXIMO</p>
+            </div>
+        `;
+    }
+
+    if(user.role === "restricted"){
+        content.innerHTML += `
+            <div class="box">
+                <h2>ACESSO LIMITADO</h2>
+                <p>> Você não possui permissões suficientes.</p>
+            </div>
+        `;
+    }
+}
+
+</script>
+
+</body>
+</html>
