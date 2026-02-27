@@ -13,10 +13,10 @@ body{
     padding:0;
 }
 
-.container{
-    width: 80%;
-    margin: auto;
-    padding: 40px;
+/* LOGIN */
+.login-container{
+    width: 400px;
+    margin: 120px auto;
 }
 
 input{
@@ -34,56 +34,93 @@ button{
     color:#00ff00;
     padding:10px;
     cursor:pointer;
+    width:100%;
 }
 
 button:hover{
     background:#003300;
 }
 
-.hidden{
-    display:none;
+/* DASHBOARD LAYOUT */
+.dashboard{
+    display:flex;
+    height:100vh;
+}
+
+.sidebar{
+    width:250px;
+    border-right:1px solid #00ff00;
+    padding:20px;
+}
+
+.sidebar h2{
+    border-bottom:1px solid #00ff00;
+    padding-bottom:10px;
+}
+
+.menu-item{
+    padding:10px;
+    cursor:pointer;
+}
+
+.menu-item:hover{
+    background:#002200;
+}
+
+.content{
+    flex:1;
+    padding:30px;
 }
 
 .box{
     border:1px solid #00ff00;
     padding:20px;
-    margin-top:20px;
 }
 
-h1,h2{
-    border-bottom:1px solid #00ff00;
-    padding-bottom:10px;
+.hidden{
+    display:none;
+}
+
+.topbar{
+    margin-bottom:20px;
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-
 <!-- LOGIN -->
-<div id="loginScreen">
-    <h1>SISTEMA INTERNO // AXION TECH</h1>
-    <p>Acesso restrito. Insira suas credenciais.</p>
+<div id="loginScreen" class="login-container">
+    <h1>SISTEMA INTERNO</h1>
+    <p>Acesso restrito</p>
     <input type="text" id="username" placeholder="Usuário">
     <input type="password" id="password" placeholder="Senha">
     <button onclick="login()">ACESSAR</button>
     <p id="error"></p>
 </div>
 
-<!-- PAINEL -->
-<div id="dashboard" class="hidden">
-    <h1>PAINEL DE ACESSO</h1>
-    <p id="welcome"></p>
-    <button onclick="logout()">Encerrar sessão</button>
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard hidden">
 
-    <div id="userContent"></div>
-</div>
+    <!-- MENU LATERAL -->
+    <div class="sidebar">
+        <h2>AXION TECH</h2>
+        <div id="menu"></div>
+        <br>
+        <button onclick="logout()">Encerrar</button>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="content">
+        <div class="topbar">
+            <h1 id="welcome"></h1>
+        </div>
+        <div id="mainContent"></div>
+    </div>
 
 </div>
 
 <script>
 
-// "Banco de dados" interno
 const users = {
     "operador": {
         password: "1234",
@@ -108,21 +145,24 @@ const users = {
     }
 };
 
+let currentUser = null;
+
 function login(){
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
     if(users[username] && users[username].password === password){
+        currentUser = username;
         document.getElementById("loginScreen").classList.add("hidden");
         document.getElementById("dashboard").classList.remove("hidden");
 
         document.getElementById("welcome").innerText =
             "Bem-vindo, " + username.toUpperCase();
 
-        loadUserContent(username);
+        loadMenu();
     }else{
         document.getElementById("error").innerText =
-            "Credenciais inválidas ou acesso negado.";
+            "Credenciais inválidas.";
     }
 }
 
@@ -130,29 +170,53 @@ function logout(){
     location.reload();
 }
 
-function loadUserContent(username){
-    const user = users[username];
-    const content = document.getElementById("userContent");
-    content.innerHTML = "";
+function loadMenu(){
+    const menu = document.getElementById("menu");
+    menu.innerHTML = "";
+
+    const user = users[currentUser];
 
     if(user.role === "default"){
-        content.innerHTML += `
+        menu.innerHTML += `<div class="menu-item" onclick="openTab('emails')">📧 Emails</div>`;
+        menu.innerHTML += `<div class="menu-item" onclick="openTab('notifications')">🔔 Notificações</div>`;
+    }
+
+    if(user.role === "director"){
+        menu.innerHTML += `<div class="menu-item" onclick="openTab('confidential')">📁 Arquivo Confidencial</div>`;
+    }
+
+    if(user.role === "restricted"){
+        menu.innerHTML += `<div class="menu-item" onclick="openTab('restricted')">⚠ Acesso</div>`;
+    }
+
+    document.getElementById("mainContent").innerHTML =
+        "<div class='box'>Selecione uma aba à esquerda.</div>";
+}
+
+function openTab(tab){
+    const user = users[currentUser];
+    const content = document.getElementById("mainContent");
+
+    if(tab === "emails"){
+        content.innerHTML = `
             <div class="box">
-                <h2>📧 CAIXA DE EMAIL</h2>
+                <h2>CAIXA DE EMAIL</h2>
                 ${user.emails.map(e => "<p>> " + e + "</p>").join("")}
             </div>
         `;
+    }
 
-        content.innerHTML += `
+    if(tab === "notifications"){
+        content.innerHTML = `
             <div class="box">
-                <h2>🔔 NOTIFICAÇÕES</h2>
+                <h2>NOTIFICAÇÕES</h2>
                 ${user.notifications.map(n => "<p>> " + n + "</p>").join("")}
             </div>
         `;
     }
 
-    if(user.role === "director"){
-        content.innerHTML += `
+    if(tab === "confidential"){
+        content.innerHTML = `
             <div class="box">
                 <h2>ARQUIVO CONFIDENCIAL</h2>
                 <p>> Projeto ECLIPSE iniciado.</p>
@@ -162,8 +226,8 @@ function loadUserContent(username){
         `;
     }
 
-    if(user.role === "restricted"){
-        content.innerHTML += `
+    if(tab === "restricted"){
+        content.innerHTML = `
             <div class="box">
                 <h2>ACESSO LIMITADO</h2>
                 <p>> Você não possui permissões suficientes.</p>
